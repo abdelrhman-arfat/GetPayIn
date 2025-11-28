@@ -58,6 +58,30 @@ return [
             'ignore_exceptions' => false,
         ],
 
+
+        // Errors log
+        'errors' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/errors.log'),
+            'level' => 'error',
+            'replace_placeholders' => true,
+        ],
+
+        'payments' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/payments.log'),
+            'level' => 'info',
+            'replace_placeholders' => true,
+        ],
+
+        'user_routes' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/user_routes.log'),
+            'level' => 'info',
+            'replace_placeholders' => true,
+        ],
+
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
@@ -89,7 +113,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
