@@ -9,16 +9,18 @@ class Response
     return response()->json([
       'message' => $message,
       'status' => true,
-      'data' => $data
+      'data' => $data,
+      "errors" => null
     ], $code);
   }
 
-  public static function error($data, $message = 'Error', int $code = 400)
+  public static function error($message = 'Error', $errors = null, int $code = 400)
   {
     return response()->json([
       'message' => $message,
       'status' => false,
-      'data' => $data
+      'data' => null,
+      "errors" => $errors
     ], $code);
   }
 }

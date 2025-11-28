@@ -2,8 +2,10 @@
 
 use App\Utils\Response;
 use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Configuration\{
+    Exceptions,
+    Middleware
+};
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,7 +22,6 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*') || $request->expectsJson()) {
                 return Response::error(null, "Login first and try again latter", 401);
             }
-
             return redirect()->guest(route('welcome'));
         });
     })->create();

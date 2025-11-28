@@ -64,6 +64,7 @@ trait LoggerTrait
             'code' => $e->getCode(),
             'file_name' => $e->getFile(),
             'line_number' => $e->getLine(),
+            'request_body' => request()->all() ?? null,
         ]);
         Log::channel('errors')->error("Error Info", $data);
     }
