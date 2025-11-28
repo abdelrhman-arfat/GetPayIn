@@ -3,37 +3,50 @@
 namespace App\Domain\Services;
 
 use App\Domain\Interfaces\RedisInterface;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Redis as RedisFacade;
 
 class RedisService implements RedisInterface
 {
     public function set(string $key, mixed $value): void
     {
-        Redis::set($key, $value);
+        RedisFacade::set($key, $value);
     }
+
+    public function remember(string $key, ?int $ttl = null, callable $callback): mixed
+    {
+        if ($this->exists($key)) {
+            return $this->get($key);
+        }
+
+        $value = $callback();
+        $this->set($key, $value, $ttl);
+
+        return $value;
+    }
+
 
     public function get(string $key): mixed
     {
-        return Redis::get($key);
+        return RedisFacade::get($key);
     }
 
     public function delete(string $key): void
     {
-        Redis::del($key);
+        RedisFacade::del($key);
     }
 
     public function exists(string $key): bool
     {
-        return Redis::exists($key) > 0;
+        return RedisFacade::exists($key) > 0;
     }
 
     public function flush(): void
     {
-        Redis::flushall();
+        RedisFacade::flushall();
     }
 
     public function __call(string $name, array $arguments): mixed
     {
-        return Redis::$name(...$arguments);
+        return RedisFacade::$name(...$arguments);
     }
 }
