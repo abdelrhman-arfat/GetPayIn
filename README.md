@@ -4,10 +4,8 @@
 
 ## Start Redis service:
 
-- I use docker to run the redis service
-
 ```bash
-  docker-compose -f docker/docker-redis.yml up --build -d
+  ./scripts/Docker.sh
 ```
 
 ## Start Application:
@@ -16,6 +14,55 @@
 - Git Terminal or any terminal sh runner
 
 ```bash
-  ./scripts/Docker.sh
   ./scripts/StartApp.sh
+```
+
+## Testing:
+
+1. Run Test for one class
+
+```bash
+  php artisan test --filter=Class
+```
+
+2. Run Test for one class
+
+```bash
+  php artisan test
+```
+
+3. Push you development new feature on dev branch after successful test cycle:
+
+```bash
+  ./scripts/CI.sh
+```
+
+---
+
+## Command :
+
+- Create your service if in `Domain Service (redis,payment,sms,etc..)` or in `Database Service (Repositories Design Pattern : Order,Product,User,etc...)`
+
+1. Database Service:
+
+```bash
+php artisan make:service Table --model
+```
+
+- Or
+
+```bash
+php artisan make:service TableService --model
+```
+
+2. Domain service:
+
+```bash
+php artisan make:service Name
+```
+
+- Or
+
+```bash
+php artisan make:service NameService
 ```
