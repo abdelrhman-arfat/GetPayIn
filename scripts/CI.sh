@@ -66,14 +66,14 @@ if [[ "${confirm,,}" == "y" ]]; then
   printf "${GREEN}✅ Successfully merged and pushed to main!${RESET}\n"
   git checkout dev
 
-  printf "🔄 ${BOLD}Do you want to Deploy new updates ? (y/n):${RESET} "
-  read confirmDeploy
-  if [[ "${confirmDeploy,,}" == "y" ]]; then
-    printf "${YELLOW}🔀 Deploying new updates...\n"
-    bash ./scripts/Deploy.sh
-  else
-    printf "${BLUE}ℹ️ Doesn't deployed \n"
-  fi
+  # printf "🔄 ${BOLD}Do you want to Deploy new updates ? (y/n):${RESET} "
+  # read confirmDeploy
+  # if [[ "${confirmDeploy,,}" == "y" ]]; then
+  #   printf "${YELLOW}🔀 Deploying new updates...\n"
+  #   bash ./scripts/Deploy.sh
+  # else
+  #   printf "${BLUE}ℹ️ Doesn't deployed \n"
+  # fi
 
 else
   printf "${BLUE}ℹ️ Skipped merging to main.${RESET}\n"
