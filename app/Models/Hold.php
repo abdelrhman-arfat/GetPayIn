@@ -49,11 +49,6 @@ class Hold extends Model
         return $query->where('status', 'pending');
     }
 
-    public function scopeOrdered($query)
-    {
-        return $query->where('status', 'ordered');
-    }
-
     public function scopeCanceled($query)
     {
         return $query->where('status', 'canceled');

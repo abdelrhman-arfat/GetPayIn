@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('hold_id')->constrained('holds');
-            $table->enum("status", ["pending", "success", "canceled"])->default("pending");
+            $table->foreignId('user_id')->constrained('users');
+            $table->decimal('amount', 10, 2);
+            $table->enum("status", ["pending", "paid", "canceled", 'failed'])->default("pending");
             $table->string("idempotency_key")->unique();
 
             $table->index(['status', 'idempotency_key']);

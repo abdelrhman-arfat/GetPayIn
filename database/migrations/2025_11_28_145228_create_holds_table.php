@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId("product_id")->constrained("products");
             $table->integer("quantity");
-            $table->enum("status", ["pending", "ordered", "success", "canceled"])->default("pending");
+            $table->enum("status", ["pending", "success", "canceled"])->default("pending");
             $table->timestamp("expires_at");
-            $table->timestamp("used_at")->nullable();
+            $table->timestamp("used_at")->nullable(); // to know it used with order table
             $table->timestamps();
             $table->index("status");
         });

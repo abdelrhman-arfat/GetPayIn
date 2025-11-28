@@ -36,9 +36,9 @@ class Order extends Model
         return $query->where('status', 'pending');
     }
 
-    public function scopeSuccess($query)
+    public function scopePaid($query)
     {
-        return $query->where('status', 'success');
+        return $query->where('status', 'paid');
     }
 
     public function scopeCanceled($query)
@@ -46,9 +46,9 @@ class Order extends Model
         return $query->where('status', 'canceled');
     }
 
-    public function scopeOrdered($query)
+    public function scopeFailed($query)
     {
-        return $query->where('status', 'ordered');
+        return $query->where('status', 'failed');
     }
 
     public function scopeWhereIdempotencyKey($query, $idempotencyKey)
