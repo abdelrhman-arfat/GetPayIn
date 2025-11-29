@@ -9,19 +9,19 @@ use Illuminate\Foundation\Testing\{
     DatabaseMigrations,
     RefreshDatabase
 };
+use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class ProductApiTest extends TestCase
+class OrderApiTest extends TestCase
 {
     use DatabaseMigrations;
-
     private ProductService $productService;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        // Create 5 fake products
+        parent::setUp();
         Product::factory()->count(5)->create();
 
         // Mock RedisService
@@ -37,13 +37,13 @@ class ProductApiTest extends TestCase
         $this->productService = new ProductService($mockRedis);
     }
 
-    public function test_returns_single_product()
+    /**
+     * A basic feature test example.
+     */
+    public function test_example(): void
     {
-        $product = Product::first();
-        $id = $product->id;
-        $response = $this->get('/api/products/' . $product->id);
+        $response = $this->get('/');
+
         $response->assertStatus(200);
-        $data = $response->json('data');
-        $this->assertEquals($id, $data['id']);;
     }
 }

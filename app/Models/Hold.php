@@ -11,6 +11,7 @@ class Hold extends Model
 
     protected $fillable = [
         "product_id",
+        'user_id',
         "quantity",
         "status",
         "expires_at"
@@ -20,9 +21,6 @@ class Hold extends Model
     protected $casts = [
         'expires_at' => 'datetime',
     ];
-
-
-
 
     public static function boot()
     {
@@ -69,5 +67,10 @@ class Hold extends Model
     public function orders()
     {
         return $this->hasOne(Order::class, 'hold_id', 'id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

@@ -8,6 +8,7 @@ echo "🚀 Starting Laravel Application Setup"
 echo "=============================="
 
 # Install dependencies
+
 echo "Installing Composer dependencies..."
 composer install
 

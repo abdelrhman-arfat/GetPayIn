@@ -60,8 +60,16 @@ This script will:
 - Seed data
 - Start the Laravel server on port **8000** (or your custom port)
 
+- First time
+
 ```bash
 ./scripts/StartApp.sh
+```
+
+- Other times:
+
+```bash
+ php artisan serve
 ```
 
 ---

@@ -12,7 +12,7 @@ class RedisService implements RedisInterface
         RedisFacade::set($key, $value);
     }
 
-    public function remember(string $key, ?int $ttl = null, callable $callback): mixed
+    public function remember(string $key, ?int $ttl = null, callable $callback)
     {
         if ($this->exists($key)) {
             return $this->get($key);

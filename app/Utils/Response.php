@@ -11,7 +11,7 @@ class Response
       'status' => true,
       'data' => $data,
       "errors" => null
-    ], $code);
+    ], self::code($code));
   }
 
   public static function error($message = 'Error', $errors = null, int $code = 400)
@@ -21,6 +21,13 @@ class Response
       'status' => false,
       'data' => null,
       "errors" => $errors
-    ], $code);
+    ], self::code($code));
+  }
+
+
+  public static function code($code)
+  {
+    if ($code < 100 || $code > 599) return 500;
+    return $code;
   }
 }

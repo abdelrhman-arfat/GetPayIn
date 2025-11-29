@@ -20,7 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (Illuminate\Auth\AuthenticationException $e, $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                return Response::error(null, "Login first and try again latter", 401);
+                $e = "Login first and try again latter";
+                return Response::error($e, null, 401);
             }
             return redirect()->guest(route('welcome'));
         });
