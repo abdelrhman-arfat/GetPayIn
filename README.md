@@ -2,7 +2,7 @@
 
 ## Api Documentation
 
-For detailed instructions, see [README_API.md](README_FLASH_SALE.md)
+For detailed instructions, see [README_API.md](README_API.md)
 
 ## 📌 Project Overview
 
