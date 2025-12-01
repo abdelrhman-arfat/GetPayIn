@@ -2,7 +2,8 @@
 
 namespace Tests\Feature\Product;
 
-use App\Domain\Services\RedisService;
+use App\Domain\Services\FakeRedisService;
+use App\Models\Hold;
 use App\Models\Product;
 use App\Models\User;
 use App\Repositories\Services\ProductService;
@@ -20,15 +21,9 @@ class HoldApiTest extends TestCase
     {
         parent::setUp();
 
+        app()->bind(\App\Domain\Interfaces\RedisInterface::class, \App\Domain\Services\FakeRedisService::class);
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
-
-        // Mock RedisService
-        $mockRedis = $this->createMock(RedisService::class);
-        $mockRedis->method('remember')->willReturnCallback(fn($key, $ttl, $callback) => $callback());
-
-        // Inject mock into ProductService
-        $this->productService = new ProductService($mockRedis);
     }
 
     /** Test successful hold */
@@ -38,11 +33,14 @@ class HoldApiTest extends TestCase
 
         $response = $this->postJson('/api/holds', [
             'product_id' => $product->id,
-            'quantity' => 2
+            'qty' => 2
         ]);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure(['status', 'data']);
+        $response->assertStatus(201)
+            ->assertJsonStructure(['status', 'data' => [
+                'hold_id',
+                'expires_at'
+            ]]);
 
         $this->assertDatabaseHas('holds', [
             'product_id' => $product->id,
@@ -62,7 +60,7 @@ class HoldApiTest extends TestCase
     {
         $response = $this->postJson('/api/holds', [
             'product_id' => 9999,
-            'quantity' => 1
+            'qty' => 1
         ]);
 
         $response->assertStatus(404);
@@ -78,7 +76,7 @@ class HoldApiTest extends TestCase
 
         $response = $this->postJson('/api/holds', [
             'product_id' => $product->id,
-            'quantity' => 5
+            'qty' => 5
         ]);
 
         $response->assertStatus(422)
@@ -111,7 +109,7 @@ class HoldApiTest extends TestCase
         // Quantity less than 1
         $response2 = $this->postJson('/api/holds', [
             'product_id' => $product->id,
-            'quantity' => 0
+            'qty' => 0
         ]);
         $response2->assertStatus(422)
             ->assertJsonFragment(['message' => 'The quantity field must be at least 1.']);
@@ -134,7 +132,7 @@ class HoldApiTest extends TestCase
 
         $this->postJson('/api/holds', [
             'product_id' => $product->id,
-            'quantity' => 1
+            'qty' => 1
         ])->assertStatus(401);
 
         // Ensure no holds were created
@@ -145,5 +143,150 @@ class HoldApiTest extends TestCase
             'id' => $product->id,
             'stock' => 5
         ]);
+    }
+
+
+
+    public function test_parallel_hold_attempts_multiple_allowed_but_no_oversell(): void
+    {
+        // Product starts with stock = 3
+        $product = Product::factory()->create(['stock' => 3]);
+
+        // Create 5 users simulating parallel buyers
+        $users = User::factory()->count(5)->create();
+
+        $results = [];
+
+        foreach ($users as $user) {
+            try {
+                // Each user tries to place a hold of 1
+                $response = $this->actingAs($user)->postJson('/api/holds', [
+                    'product_id' => $product->id,
+                    'qty' => 1
+                ]);
+
+                $results[] = $response->status() === 201 ? 'success' : 'failed';
+            } catch (\Exception $e) {
+                $results[] = 'failed';
+            }
+        }
+
+        $successCount = collect($results)->filter(fn($r) => $r === 'success')->count();
+
+        // Only up to stock should succeed
+        $this->assertEquals(3, $successCount, "Only 3 holds should succeed — matching stock.");
+        $this->assertDatabaseCount('holds', 3);
+
+        $this->assertEquals(0, $product->fresh()->stock);
+    }
+
+
+    public function test_command_clean_expired_holds()
+    {
+        $P = Product::factory()->create(['stock' => 3]);
+        Hold::factory()->create([
+            'expires_at' => now()->subMinutes(3),
+            'product_id' => $P->id,
+            'user_id' => $this->user->id,
+            'quantity' => 1,
+            'status' => 'pending'
+        ]);
+
+        $this->artisan('holds:cleanup')->assertExitCode(0);
+
+        $this->assertDatabaseCount('holds', 0);
+        $this->assertEquals(4, $P->fresh()->stock);
+    }
+
+    public function test_hold_rule_restores_stock_and_deletes_invalid_hold()
+    {
+        $product = Product::factory()->create(['stock' => 5]);
+
+        // Create an expired hold
+        $hold = Hold::factory()->create([
+            'product_id' => $product->id,
+            'user_id' => $this->user->id,
+            'quantity' => 2,
+            'expires_at' => now()->subMinutes(5),
+            'status' => 'pending'
+        ]);
+
+        $response = $this->postJson('/api/orders', [
+            'hold_id' => $hold->id
+        ]);
+
+        // Should fail validation
+        $response->assertStatus(422)
+            ->assertJsonFragment(['Hold is not available']);
+
+        // Hold must be deleted
+        $this->assertDatabaseMissing('holds', [
+            'id' => $hold->id,
+        ]);
+
+        $this->assertEquals(7, $product->fresh()->stock);
+    }
+
+    public function test_hold_rule_fails_if_hold_does_not_exist()
+    {
+        $product = Product::factory()->create(['stock' => 10]);
+
+        $response = $this->postJson('/api/orders', [
+            'hold_id' => 999999
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['Hold is not available']);
+
+        $this->assertEquals(10, $product->fresh()->stock);
+    }
+
+    public function test_hold_rule_fails_if_hold_was_already_used()
+    {
+        $product = Product::factory()->create(['stock' => 5]);
+
+        $hold = Hold::factory()->create([
+            'product_id' => $product->id,
+            'user_id' => $this->user->id,
+            'quantity' => 1,
+            'used_at' => now()->subMinute(),
+            'status' => 'pending'
+        ]);
+
+        $response = $this->postJson('/api/orders', [
+            'hold_id' => $hold->id
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['Hold is not available']);
+
+        $this->assertDatabaseMissing('holds', ['id' => $hold->id]);
+
+        $this->assertEquals(6, $product->fresh()->stock);
+    }
+
+    public function test_command_clean_expired_holds_no_updates()
+    {
+        $P = Product::factory()->create(['stock' => 3]);
+        Hold::factory()->create([
+            'expires_at' => now()->subMinutes(3),
+            'product_id' => $P->id,
+            'user_id' => $this->user->id,
+            'quantity' => 1,
+            'used_at' => now()->subMinutes(1),
+            'status' => 'pending'
+        ]);
+        Hold::factory()->create([
+            'expires_at' => now()->subMinutes(3),
+            'product_id' => $P->id,
+            'user_id' => $this->user->id,
+            'quantity' => 1,
+            'status' => 'success'
+        ]);
+
+        $this->artisan('holds:cleanup')->assertExitCode(0);
+
+        $this->assertDatabaseCount('holds', 2);
+        $this->assertEquals(3, $P->fresh()->stock);
     }
 }

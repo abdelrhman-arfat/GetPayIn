@@ -49,9 +49,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(Hold::class, 'user_id', 'id');
     }
-
     public function orders()
     {
-        return $this->hasMany(Order::class, 'user_id', 'id');
+        return $this->hasManyThrough(
+            Order::class,
+            Hold::class,
+            'user_id',
+            'hold_id',
+            'id',
+            'id'
+        );
     }
 }

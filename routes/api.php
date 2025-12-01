@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\{
   ProductController,
   HoldController,
   OrderController,
+    PaymentWebhookController,
 };
 use App\Utils\Response;
 use Illuminate\Support\Facades\Route;
@@ -25,10 +26,14 @@ Route::name("api.")->group(function () {
     Route::prefix("holds")->name("hold.")->group(function () {
       Route::post("/", [HoldController::class, "store"])->name("store");
     });
-    Route::prefix("orders")->name("order.")->group(function () {});
+    Route::prefix("orders")->name("order.")->group(function () {
+      Route::post("/", [OrderController::class, "store"])->name("store");
+    });
   });
 
-  Route::prefix("payment")->name("payment.")->group(function () {});
+  Route::prefix("payments")->name("payment.")->group(function () {
+    Route::post("/webhook", [PaymentWebhookController::class, "webhook"])->name("webhook");
+  });
 
 
 

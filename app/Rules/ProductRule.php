@@ -26,7 +26,7 @@ class ProductRule implements ValidationRule
     {
 
         $this->product = $this->productRepository->show($value);
-        $quantity = request()->input('quantity');
+        $quantity = request()->input('qty');
 
         if (!$this->product) {
             $fail("Product not found");

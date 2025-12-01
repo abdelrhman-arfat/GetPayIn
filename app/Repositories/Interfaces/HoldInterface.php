@@ -21,6 +21,15 @@ interface HoldInterface
      */
     public function index();
 
+
+    /**
+     * release hold 
+     * @param Hold $hold
+     * @return array
+     * @throws Exception
+     */
+    public function release($hold);
+
     /**
      * get hold by id
      * @param int $id

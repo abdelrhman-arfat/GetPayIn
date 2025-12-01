@@ -6,6 +6,7 @@ use App\Domain\Interfaces\RedisInterface;
 use App\Exceptions\Forbidden;
 use App\Models\Product;
 use App\Repositories\Interfaces\ProductInterface;
+use Illuminate\Support\Facades\DB;
 
 class ProductService implements ProductInterface
 {
@@ -35,11 +36,7 @@ class ProductService implements ProductInterface
 
     public function update(int|object $id, $data = null)
     {
-        $product = $this->extractProduct($id);
-        $product->update($data);
-        $key = $this->cacheKey($product->id);
-        $this->redis->set($key, json_encode($product));
-        return $product;
+        return [];
     }
 
     public function hasQuantity(int|object $pr, int $quantity): bool
@@ -53,12 +50,26 @@ class ProductService implements ProductInterface
 
     public function updateQuantity(int|object $pr, int $quantity)
     {
-        $product = $this->extractProduct($pr, false);
-        if (!$this->hasQuantity($product, $quantity)) throw new Forbidden("Product quantity is not enough", 422);
-        $product->stock = $product->stock - $quantity;
-        $product->save();
-        $key = $this->cacheKey($product->id);
-        $this->redis->set($key, json_encode($product));
+        $id = $this->extractProduct($pr)->id;
+        DB::transaction(function () use ($id, $quantity) {
+            $product = DB::table('products')
+                ->where('id', $id)
+                ->lockForUpdate()
+                ->first();
+
+
+            if ($product->stock < $quantity) {
+                throw new Forbidden("Product quantity is not enough", 422);
+            }
+
+            DB::table('products')
+                ->where('id', $id)
+                ->update([
+                    'stock' => $product->stock - $quantity
+                ]);
+        }, 5);
+        $key = $this->cacheKey($id);
+        $this->redis->delete($key);
     }
 
     private function cacheKey(string $key): string

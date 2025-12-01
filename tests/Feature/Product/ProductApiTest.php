@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Product;
 
+use App\Domain\Interfaces\RedisInterface;
+use App\Domain\Services\FakeRedisService;
 use App\Domain\Services\RedisService;
 use App\Models\Product;
 use App\Repositories\Services\ProductService;
@@ -25,16 +27,7 @@ class ProductApiTest extends TestCase
         Product::factory()->count(5)->create();
 
         // Mock RedisService
-        $mockRedis = $this->createMock(RedisService::class);
-
-        // Define behavior for remember()
-        $mockRedis->method('remember')
-            ->willReturnCallback(function ($key, $ttl, $callback) {
-                return $callback();
-            });
-
-        // Inject mock into ProductService
-        $this->productService = new ProductService($mockRedis);
+        app()->bind(RedisInterface::class, FakeRedisService::class);
     }
 
     public function test_returns_single_product()

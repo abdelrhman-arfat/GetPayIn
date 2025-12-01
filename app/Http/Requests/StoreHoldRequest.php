@@ -27,7 +27,15 @@ class StoreHoldRequest extends FormRequest
     {
         return [
             "product_id" => ["required", $this->productRule],
-            "quantity" => ["required", "numeric", "min:1"],
+            "qty" => ["required", "numeric", "min:1"],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            "qty.required" => "The quantity field is required.",
+            "qty.min" => "The quantity field must be at least 1."
         ];
     }
 

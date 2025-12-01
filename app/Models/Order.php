@@ -11,7 +11,7 @@ class Order extends Model
     protected $fillable = [
         'hold_id',
         'status',
-        'idempotency_key',
+        'amount'
     ];
 
     public function product()
@@ -29,6 +29,23 @@ class Order extends Model
     public function hold()
     {
         return $this->belongsTo(Hold::class, 'hold_id', 'id');
+    }
+
+    public function user()
+    {
+        return $this->hasOneThrough(
+            User::class,
+            Hold::class,
+            'id',
+            'id',
+            'hold_id',
+            'user_id'
+        );
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(PaymentWebhook::class, 'order_id', "id");
     }
 
     public function scopePending($query)
@@ -51,8 +68,8 @@ class Order extends Model
         return $query->where('status', 'failed');
     }
 
-    public function scopeWhereIdempotencyKey($query, $idempotencyKey)
+    public function isAvailable(): bool
     {
-        return $query->where('idempotency_key', $idempotencyKey);
+        return $this->status === 'pending';
     }
 }

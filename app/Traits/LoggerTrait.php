@@ -72,9 +72,7 @@ trait LoggerTrait
     public function paymentLogging($data = [])
     {
         $logData = $this->extractUserData();
-
         $logData = array_merge($logData, $data);
-
         Log::channel('payments')->info("Payment Info", $logData);
     }
 }

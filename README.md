@@ -74,7 +74,32 @@ This script will:
 
 ---
 
+## scheduled task:
+
+```bash
+php artisan schedule:work
+```
+
+---
+
+## Logs:
+
+- You can use `LoggerTrait` and show the log's channel in `config/logging.php`
+
+- Error logs in `storage/logs/errors.log`
+- Payment logs in `storage/logs/payment.log`
+
+---
+
 ## 🧪 Testing
+
+### ▶ Run Parallel test:
+
+- i use `composer require brianium/paratest --dev`
+
+```bash
+ php artisan test --parallel
+```
 
 ### ▶ Run Test for one class:
 

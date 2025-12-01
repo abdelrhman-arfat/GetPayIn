@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\Forbidden;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreHoldRequest;
+use App\Http\Resources\HoldResource;
 use App\Repositories\Interfaces\HoldInterface;
 use App\Repositories\Interfaces\ProductInterface;
 use App\Traits\LoggerTrait;
@@ -38,9 +39,10 @@ class HoldController extends Controller
         try {
             $data = $request->validated();
             $product = $request->getProduct();
-            $quantity = $data['quantity'];
+            $quantity = $data['qty'];
             $hold = $this->holdRepository->store($product, $quantity);
-            return Response::success($hold);
+            $resData = new HoldResource($hold);
+            return Response::success($resData, 'your hold has been created', 201);
         } catch (ModelNotFoundException $e) {
             return Response::error("product not found", $e->getMessage(), 404);
         } catch (Exception $e) {

@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('payment_webhooks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hold_id')->constrained('holds');
-            $table->decimal('amount', 10, 2);
-            $table->enum("status", ["pending", "paid", "canceled", 'failed'])->default("pending");
-            $table->index(['status', 'idempotency_key']);
+            $table->string('idempotency_key')->unique();
+            $table->foreignId("order_id")->constrained("orders");
+            $table->enum("status", ["success", 'refunded', "canceled", 'failed'])->default("paid");
+            $table->decimal("amount", 10, 2);
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('payment_webhooks');
     }
 };

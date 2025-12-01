@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Hold extends Model
 {
+    use HasFactory;
     protected $table = "holds";
 
     protected $fillable = [
@@ -47,9 +49,9 @@ class Hold extends Model
         return $query->where('status', 'pending');
     }
 
-    public function scopeCanceled($query)
+    public function scopeFailed($query)
     {
-        return $query->where('status', 'canceled');
+        return $query->where('status', 'failed');
     }
 
     public function scopeExpired($query)
@@ -59,6 +61,24 @@ class Hold extends Model
             ->where('expires_at', '<=', now());
     }
 
+    public function scopeUsed($query)
+    {
+        return $query->whereNotNull("used_at");
+    }
+
+    public function scopeAvailable($query)
+    {
+        return $query->where("status", "pending")
+            ->whereNull("used_at")
+            ->where('expires_at', '>', now());
+    }
+
+
+
+    public function isAvailable(): bool
+    {
+        return $this->status === 'pending' && $this->used_at === null && $this->expires_at > now();
+    }
     //  ============================ Relations ============================ 
     public function product()
     {
