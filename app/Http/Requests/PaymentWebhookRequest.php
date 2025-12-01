@@ -36,7 +36,7 @@ class PaymentWebhookRequest extends FormRequest
         return [
             "order_id" => ["required", $this->orderRule],
             'status' => 'required|in:success,canceled,failed',
-            "idempotency_key" => ["required", 'unique:payment_webhooks,transaction_id']
+            "idempotency_key" => ["required", 'unique:payment_webhooks,idempotency_key']
 
         ];
     }

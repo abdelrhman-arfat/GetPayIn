@@ -11,7 +11,8 @@ class OrderService implements OrderInterface
 {
     public function store($hold)
     {
-        DB::transaction(function () use ($hold) {
+        $order = null;
+        DB::transaction(function () use ($hold, &$order) {
 
             if (!$hold->isAvailable()) {
                 throw new Forbidden("The hold is expired", 400);
@@ -22,13 +23,15 @@ class OrderService implements OrderInterface
                 'used_at' => now()
             ]);
 
-            return Order::create([
+            $order = Order::create([
                 'hold_id' => $hold->id,
                 'status' => 'pending',
                 'amount' => $hold->product->price * $hold->quantity
             ]);
+
+            return $order;
         }, 3);
-        return null;
+        return $order;
     }
 
     public function show($id)
