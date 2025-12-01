@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('idempotency_key')->unique();
             $table->foreignId("order_id")->constrained("orders");
-            $table->enum("status", ["success", 'refunded', "canceled", 'failed'])->default("paid");
+            $table->enum("status", ["success", 'refunded', "canceled", 'failed'])->default("success");
             $table->decimal("amount", 10, 2);
             $table->timestamps();
         });

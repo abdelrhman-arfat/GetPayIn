@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('hold_id')->constrained('holds');
             $table->decimal('amount', 10, 2);
             $table->enum("status", ["pending", "paid", "canceled", 'failed'])->default("pending");
-            $table->index(['status', 'idempotency_key']);
+            $table->index(['status']);
             $table->timestamps();
         });
     }

@@ -46,6 +46,7 @@ class HoldApiTest extends TestCase
             'product_id' => $product->id,
             'user_id' => $this->user->id,
             'quantity' => 2,
+            'expires_at' => now()->addMinutes(2)->format('Y-m-d H:i:s'),
             'status' => 'pending'
         ]);
 

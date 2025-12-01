@@ -16,7 +16,7 @@ class HoldResource extends JsonResource
     {
         return [
             "hold_id" => $this->id,
-            "expires_at" => $this->expired_at
+            "expires_at" => $this->expires_at
         ];
     }
 }
